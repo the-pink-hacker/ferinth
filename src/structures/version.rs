@@ -29,6 +29,25 @@ pub struct Version {
     pub files: Vec<VersionFile>,
 }
 
+#[derive(Serialize, Debug, Clone)]
+pub struct CreateVersion {
+    pub name: String,
+    /// Ideally will follow semantic versioning
+    pub version_number: String,
+    pub changelog: Option<String>,
+    pub dependencies: Vec<Dependency>,
+    pub game_versions: Vec<String>,
+    /// The release channel for this version
+    pub version_type: VersionType,
+    pub loaders: Vec<String>,
+    pub featured: bool,
+    pub status: Option<Status>,
+    pub requested_status: Option<RequestedStatus>,
+    pub project_id: ID,
+    pub file_parts: Vec<String>,
+    pub primary_file: Option<String>,
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct VersionFile {
     pub hashes: Hash,

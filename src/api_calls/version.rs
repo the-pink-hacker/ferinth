@@ -2,6 +2,10 @@
 //!
 //! [documentation](https://docs.modrinth.com/api-spec/#tag/versions)
 
+use std::borrow::Cow;
+
+use reqwest::multipart::{Form, Part};
+
 use super::*;
 use crate::structures::{version::*, UtcTime};
 
@@ -189,6 +193,26 @@ impl Ferinth {
                 API_BASE_URL
                     .join_all(vec!["versions"])
                     .with_query_json("ids", version_ids)?,
+            )
+            .custom_send_json()
+            .await
+    }
+
+    pub async fn create_version(
+        &self,
+        version_meta: &CreateVersion,
+        version_file_name: impl Into<Cow<'static, str>>,
+        version_file: impl Into<Cow<'static, [u8]>>,
+    ) -> Result<Version> {
+        self.client
+            .post(API_BASE_URL.join_all(vec!["version"]))
+            .multipart(
+                Form::new()
+                    .text("data", serde_json::to_string(version_meta)?)
+                    .part(
+                        "file",
+                        Part::bytes(version_file).file_name(version_file_name),
+                    ),
             )
             .custom_send_json()
             .await
