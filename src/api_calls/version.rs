@@ -201,19 +201,23 @@ impl Ferinth {
     pub async fn create_version(
         &self,
         version_meta: &CreateVersion,
-        version_file_name: impl Into<Cow<'static, str>>,
-        version_file: impl Into<Cow<'static, [u8]>>,
+        version_files: Vec<(
+            impl Into<Cow<'static, str>> + Clone,
+            impl Into<Cow<'static, [u8]>>,
+        )>,
     ) -> Result<Version> {
+        let mut form = Form::new().text("data", serde_json::to_string(version_meta)?);
+
+        for (file_name, version_file) in version_files {
+            form = form.part(
+                file_name.clone().into(),
+                Part::bytes(version_file).file_name(file_name),
+            );
+        }
+
         self.client
             .post(API_BASE_URL.join_all(vec!["version"]))
-            .multipart(
-                Form::new()
-                    .text("data", serde_json::to_string(version_meta)?)
-                    .part(
-                        "file",
-                        Part::bytes(version_file).file_name(version_file_name),
-                    ),
-            )
+            .multipart(form)
             .custom_send_json()
             .await
     }
