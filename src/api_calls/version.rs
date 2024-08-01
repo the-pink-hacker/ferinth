@@ -202,15 +202,16 @@ impl Ferinth {
         &self,
         version_meta: &CreateVersion,
         version_files: Vec<(
-            impl Into<Cow<'static, str>> + Clone,
+            impl Into<Cow<'static, str>>,
+            impl Into<Cow<'static, str>>,
             impl Into<Cow<'static, [u8]>>,
         )>,
     ) -> Result<Version> {
         let mut form = Form::new().text("data", serde_json::to_string(version_meta)?);
 
-        for (file_name, version_file) in version_files {
+        for (file_part_name, file_name, version_file) in version_files {
             form = form.part(
-                file_name.clone().into(),
+                file_part_name.into(),
                 Part::bytes(version_file).file_name(file_name),
             );
         }
